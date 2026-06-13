@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Café 't PC — Kassa</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --hop: #7a8c2e;
+    --hop-light: #b5c44a;
+    --hop-pale: #eef2d8;
+    --hop-dark: #4a5418;
+    --cream: #f7f5ee;
+    --ink: #1a1a14;
+    --mid: #5a5a4a;
+    --border: #d4d8b8;
+    --red: #c0392b;
+    --white: #ffffff;
+  }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    background: var(--hop-dark);
+    color: var(--white);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  header h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.6rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  header span {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    opacity: 0.7;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* ── MENU PANEEL ── */
+  .menu-panel {
+    padding: 20px;
+    overflow-y: auto;
+    max-height: calc(100vh - 56px);
+  }
+
+  .search-bar {
+    position: sticky;
+    top: 0;
+    background: var(--cream);
+    padding-top: 4px;
+    padding-bottom: 8px;
+    z-index: 10;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 46px;
+    background: var(--cream);
+    padding-bottom: 10px;
+    z-index: 9;
+  }
+
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.95rem;
+    background: var(--white);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-bar input:focus { border-color: var(--hop); }
+
+  .tab-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    background: var(--white);
+    color: var(--mid);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .tab-btn.active, .tab-btn:hover {
+    background: var(--hop);
+    border-color: var(--hop);
+    color: var(--white);
+  }
+
+  .category-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--hop-dark);
+    padding: 20px 0 10px;
+    border-bottom: 2px solid var(--hop-pale);
+    margin-bottom: 10px;
+  }
+
+  .category-label:first-of-type { padding-top: 6px; }
+
+  #menuItems { padding-top: 2px; }
+
+  .items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .item-btn {
+    background: var(--white);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 10px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 70px;
+  }
+
+  .item-btn:hover {
+    border-color: var(--hop-light);
+    background: var(--hop-pale);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(122,140,46,0.15);
+  }
+
+  .item-btn:active { transform: translateY(0); }
+
+  .item-name {
+    font-family: 'Barlow', sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+
+  .item-sub {
+    font-size: 0.75rem;
+    color: var(--mid);
+    font-weight: 400;
+  }
+
+  .item-price {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--hop-dark);
+    margin-top: auto;
+  }
+
+  /* ── KASSA PANEEL ── */
+  .kassa-panel {
+    background: var(--white);
+    border-left: 2px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 56px);
+    position: sticky;
+    top: 56px;
+  }
+
+  .kassa-header {
+    padding: 16px 18px 12px;
+    border-bottom: 2px solid var(--hop-pale);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .kassa-header h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--hop-dark);
+  }
+
+  .clear-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: none;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: var(--mid);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .clear-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .order-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 18px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--border);
+  }
+
+  .empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; }
+
+  .empty-state p {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .order-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--hop-pale);
+  }
+
+  .order-row:last-child { border-bottom: none; }
+
+  .order-name {
+    flex: 1;
+    font-size: 0.88rem;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .order-sub {
+    font-size: 0.75rem;
+    color: var(--mid);
+    font-weight: 400;
+  }
+
+  .qty-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .qty-btn {
+    width: 26px;
+    height: 26px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    background: var(--cream);
+    color: var(--hop-dark);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: background 0.1s;
+  }
+
+  .qty-btn:hover { background: var(--hop-pale); border-color: var(--hop); }
+
+  .qty-btn.minus:hover { background: #fde8e8; border-color: var(--red); color: var(--red); }
+
+  .qty-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    width: 22px;
+    text-align: center;
+    color: var(--ink);
+  }
+
+  .order-line-price {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--hop-dark);
+    min-width: 46px;
+    text-align: right;
+  }
+
+  .kassa-footer {
+    border-top: 2px solid var(--border);
+    padding: 14px 18px;
+  }
+
+  .totaal-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+  }
+
+  .totaal-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mid);
+  }
+
+  .totaal-bedrag {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 2rem;
+    color: var(--hop-dark);
+    letter-spacing: -0.01em;
+  }
+
+  .afrekenen-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--hop-dark);
+    color: var(--white);
+    border: none;
+    border-radius: 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .afrekenen-btn:hover { background: var(--hop); }
+  .afrekenen-btn:disabled { background: var(--border); cursor: not-allowed; }
+
+  /* ── BETAAL MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 28px 28px 24px;
+    width: 340px;
+    max-width: 95vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+
+  .modal h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.3rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--hop-dark);
+    margin-bottom: 20px;
+  }
+
+  .modal-totaal {
+    background: var(--hop-pale);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-totaal span {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mid);
+  }
+
+  .modal-totaal strong {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.8rem;
+    color: var(--hop-dark);
+  }
+
+  .betaal-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--mid);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .betaal-input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--ink);
+    text-align: right;
+    outline: none;
+    margin-bottom: 10px;
+    transition: border-color 0.2s;
+  }
+
+  .betaal-input:focus { border-color: var(--hop); }
+
+  .wisselgeld-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--hop-pale);
+    border-radius: 8px;
+    margin-bottom: 18px;
+    min-height: 44px;
+  }
+
+  .wisselgeld-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mid);
+  }
+
+  .wisselgeld-bedrag {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.6rem;
+    color: var(--hop-dark);
+  }
+
+  .wisselgeld-bedrag.ok { color: #27ae60; }
+  .wisselgeld-bedrag.tekort { color: var(--red); }
+
+  .quick-btns {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+
+  .quick-btn {
+    padding: 9px 4px;
+    background: var(--cream);
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: var(--ink);
+    transition: all 0.1s;
+    text-align: center;
+  }
+
+  .quick-btn:hover { background: var(--hop-pale); border-color: var(--hop); }
+
+  .modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .modal-cancel {
+    padding: 12px;
+    background: var(--cream);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: var(--mid);
+    transition: all 0.15s;
+  }
+
+  .modal-cancel:hover { border-color: var(--red); color: var(--red); }
+
+  .modal-confirm {
+    padding: 12px;
+    background: #27ae60;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: var(--white);
+    transition: background 0.15s;
+  }
+
+  .modal-confirm:hover { background: #219a55; }
+  .modal-confirm:disabled { background: var(--border); cursor: not-allowed; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--hop-dark);
+    color: var(--white);
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+    z-index: 300;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    pointer-events: none;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .item-btn.blanco {
+    border-style: dashed;
+    border-color: var(--border);
+    background: var(--cream);
+    opacity: 0.7;
+  }
+  .item-btn.blanco:hover {
+    opacity: 1;
+    border-color: var(--hop);
+    background: var(--hop-pale);
+  }
+  .item-btn.blanco .item-name { color: var(--mid); font-style: italic; }
+
+
+  /* ── HEADER ── */
+  .header-left { display: flex; align-items: center; gap: 12px; }
+
+  .back-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+    background: rgba(255,255,255,0.15);
+    border: 1.5px solid rgba(255,255,255,0.3);
+    border-radius: 7px;
+    color: var(--white);
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .back-btn:hover { background: rgba(255,255,255,0.25); }
+
+  /* ── TAFELKIEZER ── */
+  .tafel-view {
+    flex: 1;
+    padding: 28px 24px;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .tafel-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .tafel-card {
+    background: var(--white);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 14px 16px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    position: relative;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .tafel-card:hover {
+    border-color: var(--hop);
+    background: var(--hop-pale);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(122,140,46,0.15);
+  }
+
+  .tafel-card.bezet {
+    border-color: var(--hop);
+    background: var(--hop-pale);
+  }
+
+  .tafel-card.bezet:hover {
+    border-color: var(--hop-dark);
+    background: #e2e8b8;
+  }
+
+  .tafel-nr {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 2.2rem;
+    color: var(--hop-dark);
+    line-height: 1;
+  }
+
+  .tafel-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mid);
+  }
+
+  .tafel-badge {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--hop-dark);
+    background: var(--hop-light);
+    color: white;
+    border-radius: 20px;
+    padding: 2px 10px;
+    margin-top: 4px;
+  }
+
+  .tafel-empty {
+    font-size: 0.8rem;
+    color: var(--border);
+    font-style: italic;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 700px) {
+    .layout { grid-template-columns: 1fr; }
+    .kassa-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-height: 55vh;
+      border-left: none;
+      border-top: 2px solid var(--border);
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.12);
+      z-index: 50;
+    }
+    .menu-panel { padding-bottom: 230px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <button class="back-btn" id="backBtn" onclick="backToTafels()" style="display:none">← Tafels</button>
+    <h1>☘ Café 't PC</h1>
+  </div>
+  <span id="headerSub">Stevensveldstraat 3 · Meldert</span>
+</header>
+
+<!-- TAFELKIEZER -->
+<div id="tafelView" class="tafel-view" style="display:flex; flex-direction:column; align-items:center;">
+  <div class="tafel-grid" id="tafelGrid"></div>
+</div>
+
+<div class="layout" id="kassaView" style="display:none">
+  <!-- MENU -->
+  <div class="menu-panel" id="menuPanel">
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Zoek een artikel…" oninput="renderMenu()">
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div id="menuItems"></div>
+  </div>
+
+  <!-- KASSA -->
+  <div class="kassa-panel">
+    <div class="kassa-header">
+      <h2 id="kassaTitle">Bestelling</h2>
+      <button class="clear-btn" onclick="clearOrder()">Leegmaken</button>
+    </div>
+    <div class="order-list" id="orderList">
+      <div class="empty-state">
+        <div class="icon">🍺</div>
+        <p>Nog niets besteld</p>
+      </div>
+    </div>
+    <div class="kassa-footer">
+      <div class="totaal-row">
+        <span class="totaal-label">Totaal</span>
+        <span class="totaal-bedrag" id="totaalBedrag">€0,00</span>
+      </div>
+      <button class="afrekenen-btn" id="afrekenenBtn" onclick="openModal()" disabled>Afrekenen</button>
+    </div>
+  </div>
+</div>
+
+<!-- BETAAL MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">Afrekenen</h3>
+    <div class="modal-totaal">
+      <span>Te betalen</span>
+      <strong id="modalTotaal">€0,00</strong>
+    </div>
+    <div class="betaal-label">Ontvangen bedrag</div>
+    <input type="number" class="betaal-input" id="betaalInput" placeholder="0,00" step="0.01" min="0" oninput="updateWisselgeld()">
+    <div class="quick-btns" id="quickBtns"></div>
+    <div class="wisselgeld-row">
+      <span class="wisselgeld-label">Wisselgeld</span>
+      <span class="wisselgeld-bedrag" id="wisselgeldBedrag">—</span>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Annuleren</button>
+      <button class="modal-confirm" id="confirmBtn" onclick="bevestigBetaling()" disabled>Bevestigen</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const MENU = [
+  // Bieren
+  { id: 101, cat: 'Bieren', name: '—', sub: 'blanco', price: 0.00, blanco: true },
+  { id: 102, cat: 'Bieren', name: '—', sub: 'blanco', price: 0.00, blanco: true },
+  { id: 103, cat: 'Bieren', name: '—', sub: 'blanco', price: 0.00, blanco: true },
+  { id: 104, cat: 'Bieren', name: '—', sub: 'blanco', price: 0.00, blanco: true },
+  { id: 1, cat: 'Bieren', name: 'Pils Jupiler', sub: 'fles / vat', price: 2.00 },
+  { id: 2, cat: 'Bieren', name: 'Hoegaarden', price: 2.00 },
+  { id: 3, cat: 'Bieren', name: 'Vedett', price: 2.50 },
+  { id: 4, cat: 'Bieren', name: 'Carlsberg', sub: 'ook 0%', price: 2.50 },
+  { id: 5, cat: 'Bieren', name: 'Kriek Boon', sub: 'klein', price: 2.50 },
+  { id: 6, cat: 'Bieren', name: 'Affligem blond', price: 3.50 },
+  { id: 7, cat: 'Bieren', name: 'Duvel', price: 3.50 },
+  { id: 8, cat: 'Bieren', name: 'Corsendonck', price: 3.50 },
+  { id: 9, cat: 'Bieren', name: 'Omer', price: 3.50 },
+  { id: 10, cat: 'Bieren', name: 'Karmeliet', price: 3.50 },
+  { id: 11, cat: 'Bieren', name: 'Orval', price: 4.00 },
+  { id: 12, cat: 'Bieren', name: 'Cornet', price: 3.50 },
+  { id: 13, cat: 'Bieren', name: 'Chimay tripel', price: 3.50 },
+  { id: 14, cat: 'Bieren', name: 'Chimay blauw', price: 3.50 },
+  { id: 15, cat: 'Bieren', name: 'Westmalle tripel', price: 3.50 },
+  { id: 16, cat: 'Bieren', name: 'Kriek Boon 37cl', price: 4.50 },
+  { id: 17, cat: 'Bieren', name: 'Geuze Boon 37cl', price: 4.50 },
+  // Frisdranken
+  { id: 20, cat: 'Frisdranken', name: 'Water', sub: 'plat / bruis', price: 2.00 },
+  { id: 21, cat: 'Frisdranken', name: 'Coca-Cola', price: 2.00 },
+  { id: 22, cat: 'Frisdranken', name: 'Cola light/zero', price: 2.00 },
+  { id: 23, cat: 'Frisdranken', name: 'Fanta', price: 2.00 },
+  { id: 24, cat: 'Frisdranken', name: 'Sprite', price: 2.00 },
+  { id: 25, cat: 'Frisdranken', name: 'Ice Tea', price: 2.50 },
+  { id: 26, cat: 'Frisdranken', name: 'Perrier', price: 2.50 },
+  { id: 27, cat: 'Frisdranken', name: 'Schweppes', price: 2.50 },
+  { id: 28, cat: 'Frisdranken', name: 'Cécemel', price: 3.00 },
+  { id: 29, cat: 'Frisdranken', name: 'Fruitsap', price: 2.50 },
+  { id: 30, cat: 'Frisdranken', name: 'Tönissteiner citroen', price: 2.50 },
+  { id: 31, cat: 'Frisdranken', name: 'Tönissteiner red', price: 2.50 },
+  { id: 32, cat: 'Frisdranken', name: 'Tönissteiner vruchtenkorf', price: 2.50 },
+  // Warme dranken
+  { id: 40, cat: 'Warme dranken', name: 'Koffie', sub: 'gewoon / deca', price: 2.00 },
+  { id: 41, cat: 'Warme dranken', name: 'Thee', price: 2.00 },
+  { id: 42, cat: 'Warme dranken', name: 'Chocomelk', price: 2.00 },
+  { id: 43, cat: 'Warme dranken', name: 'Soep', price: 2.00 },
+  // Aperitieven
+  { id: 50, cat: 'Aperitieven & wijn', name: 'Martini', sub: 'rood / wit', price: 4.00 },
+  { id: 51, cat: 'Aperitieven & wijn', name: 'Porto', sub: 'rood / wit', price: 4.00 },
+  { id: 52, cat: 'Aperitieven & wijn', name: 'Cava grote fles', price: 17.00 },
+  { id: 53, cat: 'Aperitieven & wijn', name: 'Cava kleine fles', price: 6.00 },
+  { id: 54, cat: 'Aperitieven & wijn', name: 'Glas wijn', sub: 'wit / rosé / rood', price: 3.50 },
+  { id: 55, cat: 'Aperitieven & wijn', name: 'Fles wijn', sub: 'wit / rosé / rood', price: 17.00 },
+  // Versnaperingen
+  { id: 60, cat: 'Versnaperingen', name: 'Chips', sub: 'zout / paprika / pickels', price: 2.00 },
+  { id: 61, cat: 'Versnaperingen', name: 'Chocolade', price: 2.00 },
+  { id: 62, cat: 'Versnaperingen', name: 'Wafel', price: 2.00 },
+];
+
+const CATS = ['Alle', ...new Set(MENU.map(i => i.cat))];
+let activeTab = 'Alle';
+let order = {}; // id -> qty
+let activeTafel = null; // 1-8
+// tafels[n] = { order: {id: qty} }
+const tafels = {};
+for (let i = 1; i <= 8; i++) tafels[i] = { order: {} };
+
+// Build tabs
+const tabsEl = document.getElementById('tabs');
+CATS.forEach(cat => {
+  const b = document.createElement('button');
+  b.className = 'tab-btn' + (cat === activeTab ? ' active' : '');
+  b.textContent = cat;
+  b.onclick = () => { activeTab = cat; renderTabs(); renderMenu(); };
+  tabsEl.appendChild(b);
+});
+
+function renderTabs() {
+  tabsEl.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.className = 'tab-btn' + (CATS[i] === activeTab ? ' active' : '');
+  });
+}
+
+function renderTafelView() {
+  const grid = document.getElementById('tafelGrid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= 8; i++) {
+    const tafel = tafels[i];
+    const items = Object.keys(tafel.order).length;
+    const total = Object.keys(tafel.order).reduce((s, id) => {
+      const item = MENU.find(m => m.id === +id);
+      return s + (item ? item.price * tafel.order[id] : 0);
+    }, 0);
+    const bezet = items > 0;
+
+    const card = document.createElement('div');
+    card.className = 'tafel-card' + (bezet ? ' bezet' : '');
+    card.innerHTML = `
+      <div class="tafel-nr">${i}</div>
+      <div class="tafel-label">Tafel ${i}</div>
+      ${bezet
+        ? `<div class="tafel-badge">${fmt(total)}</div>`
+        : `<div class="tafel-empty">vrij</div>`}
+    `;
+    card.onclick = () => openTafel(i);
+    grid.appendChild(card);
+  }
+}
+
+function openTafel(nr) {
+  activeTafel = nr;
+  order = tafels[nr].order;
+  document.getElementById('tafelView').style.display = 'none';
+  document.getElementById('kassaView').style.display = 'grid';
+  document.getElementById('backBtn').style.display = 'inline-flex';
+  document.getElementById('headerSub').textContent = '';
+  document.getElementById('kassaTitle').textContent = 'Tafel ' + nr;
+  renderOrder();
+  renderMenu();
+}
+
+function backToTafels() {
+  tafels[activeTafel].order = order;
+  activeTafel = null;
+  order = {};
+  document.getElementById('tafelView').style.display = 'flex';
+  document.getElementById('kassaView').style.display = 'none';
+  document.getElementById('backBtn').style.display = 'none';
+  document.getElementById('headerSub').textContent = 'Stevensveldstraat 3 · Meldert';
+  renderTafelView();
+}
+
+function renderMenu() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const container = document.getElementById('menuItems');
+  container.innerHTML = '';
+
+  const cats = activeTab === 'Alle' ? [...new Set(MENU.map(i => i.cat))] : [activeTab];
+  cats.forEach(cat => {
+    const items = MENU.filter(i => i.cat === cat &&
+      (i.name.toLowerCase().includes(q) || (i.sub || '').toLowerCase().includes(q)));
+    if (!items.length) return;
+
+    const lbl = document.createElement('div');
+    lbl.className = 'category-label';
+    lbl.textContent = cat;
+    container.appendChild(lbl);
+
+    const grid = document.createElement('div');
+    grid.className = 'items-grid';
+    items.forEach(item => {
+      const btn = document.createElement('button');
+      btn.className = 'item-btn' + (item.blanco ? ' blanco' : '');
+      if (item.blanco) {
+        btn.innerHTML = `<div class="item-name">+ Toevoegen</div><div class="item-sub">blanco artikel</div><div class="item-price">—</div>`;
+        btn.onclick = () => editBlanco(item.id);
+      } else {
+        btn.innerHTML = `
+          <div class="item-name">${item.name}</div>
+          ${item.sub ? `<div class="item-sub">${item.sub}</div>` : ''}
+          <div class="item-price">€${item.price.toFixed(2).replace('.', ',')}</div>
+        `;
+        btn.onclick = () => addItem(item.id);
+      }
+      grid.appendChild(btn);
+    });
+    container.appendChild(grid);
+  });
+}
+
+function editBlanco(id) {
+  const item = MENU.find(i => i.id === id);
+  const naam = prompt('Naam van het artikel:', item.name === '—' ? '' : item.name);
+  if (naam === null) return;
+  const prijsStr = prompt('Prijs (bv. 3.50):', item.price || '');
+  if (prijsStr === null) return;
+  const prijs = parseFloat(prijsStr.replace(',', '.'));
+  if (isNaN(prijs) || prijs < 0) { alert('Ongeldige prijs.'); return; }
+  item.name = naam || '—';
+  item.price = prijs;
+  item.blanco = false;
+  renderMenu();
+  addItem(id);
+}
+
+function addItem(id) {
+  order[id] = (order[id] || 0) + 1;
+  renderOrder();
+}
+
+function changeQty(id, delta) {
+  order[id] = (order[id] || 0) + delta;
+  if (order[id] <= 0) delete order[id];
+  renderOrder();
+}
+
+function clearOrder() {
+  order = {};
+  if (activeTafel) tafels[activeTafel].order = {};
+  renderOrder();
+}
+
+function renderOrder() {
+  const list = document.getElementById('orderList');
+  const ids = Object.keys(order).map(Number);
+
+  if (!ids.length) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">🍺</div><p>Nog niets besteld</p></div>`;
+    document.getElementById('totaalBedrag').textContent = '€0,00';
+    document.getElementById('afrekenenBtn').disabled = true;
+    return;
+  }
+
+  let total = 0;
+  list.innerHTML = '';
+  ids.forEach(id => {
+    const item = MENU.find(i => i.id === id);
+    const qty = order[id];
+    total += item.price * qty;
+
+    const row = document.createElement('div');
+    row.className = 'order-row';
+    row.innerHTML = `
+      <div class="order-name">
+        ${item.name}
+        ${item.sub ? `<br><span class="order-sub">${item.sub}</span>` : ''}
+      </div>
+      <div class="qty-ctrl">
+        <button class="qty-btn minus" onclick="changeQty(${id}, -1)">−</button>
+        <span class="qty-num">${qty}</span>
+        <button class="qty-btn" onclick="changeQty(${id}, 1)">+</button>
+      </div>
+      <div class="order-line-price">€${(item.price * qty).toFixed(2).replace('.', ',')}</div>
+    `;
+    list.appendChild(row);
+  });
+
+  document.getElementById('totaalBedrag').textContent = fmt(total);
+  document.getElementById('afrekenenBtn').disabled = false;
+}
+
+function fmt(n) {
+  return '€' + n.toFixed(2).replace('.', ',');
+}
+
+function getTotal() {
+  return Object.keys(order).reduce((s, id) => {
+    const item = MENU.find(i => i.id === +id);
+    return s + item.price * order[id];
+  }, 0);
+}
+
+// Modal
+function openModal() {
+  const total = getTotal();
+  document.getElementById('modalTotaal').textContent = fmt(total);
+  document.getElementById('modalTitle').textContent = activeTafel ? 'Tafel ' + activeTafel + ' afrekenen' : 'Afrekenen';
+  document.getElementById('betaalInput').value = '';
+  document.getElementById('wisselgeldBedrag').textContent = '—';
+  document.getElementById('wisselgeldBedrag').className = 'wisselgeld-bedrag';
+  document.getElementById('confirmBtn').disabled = true;
+
+  // Quick buttons: exact + round-ups
+  const t = total;
+  const rounds = [t, Math.ceil(t), Math.ceil(t / 5) * 5, Math.ceil(t / 10) * 10, 20, 50].filter((v, i, a) => v > 0 && a.indexOf(v) === i).slice(0, 4);
+  document.getElementById('quickBtns').innerHTML = rounds.map(v =>
+    `<button class="quick-btn" onclick="setPayment(${v})">${fmt(v)}</button>`
+  ).join('');
+
+  document.getElementById('modalOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('betaalInput').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function setPayment(val) {
+  document.getElementById('betaalInput').value = val.toFixed(2);
+  updateWisselgeld();
+}
+
+function updateWisselgeld() {
+  const total = getTotal();
+  const paid = parseFloat(document.getElementById('betaalInput').value) || 0;
+  const change = paid - total;
+  const el = document.getElementById('wisselgeldBedrag');
+
+  if (!document.getElementById('betaalInput').value) {
+    el.textContent = '—';
+    el.className = 'wisselgeld-bedrag';
+    document.getElementById('confirmBtn').disabled = true;
+    return;
+  }
+
+  if (change < 0) {
+    el.textContent = fmt(Math.abs(change)) + ' tekort';
+    el.className = 'wisselgeld-bedrag tekort';
+    document.getElementById('confirmBtn').disabled = true;
+  } else {
+    el.textContent = fmt(change);
+    el.className = 'wisselgeld-bedrag ok';
+    document.getElementById('confirmBtn').disabled = false;
+  }
+}
+
+function bevestigBetaling() {
+  closeModal();
+  const nr = activeTafel;
+  clearOrder();
+  backToTafels();
+  showToast('✓ Tafel ' + nr + ' afgerekend!');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Close modal on overlay click
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+// Init
+renderTafelView();
+</script>
+</body>
+</html>
